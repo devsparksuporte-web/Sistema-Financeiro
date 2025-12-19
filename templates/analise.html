@@ -1,0 +1,469 @@
+{% extends "base.html" %}
+
+{% block title %}Análise Financeira{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Cabeçalho -->
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h3 mb-2">
+                <i class="fas fa-chart-bar text-primary me-2"></i> Análise Financeira Avançada
+            </h1>
+            <p class="text-muted">Indicadores corporativos, tendências e diagnóstico empresarial</p>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-outline-primary" onclick="exportarAnalise()">
+                <i class="fas fa-file-pdf me-1"></i> Exportar Relatório
+            </button>
+        </div>
+    </div>
+    
+    <!-- Indicadores de Liquidez -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 fw-bold text-primary">
+                        <i class="fas fa-water me-1"></i> Indicadores de Liquidez
+                    </h6>
+                    <select class="form-select form-select-sm w-auto" onchange="atualizarIndicadores()">
+                        <option value="atual">Atual</option>
+                        <option value="mes_anterior">Mês Anterior</option>
+                        <option value="trimestre_anterior">Trimestre Anterior</option>
+                    </select>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-start border-primary border-4">
+                                <div class="card-body">
+                                    <div class="text-muted small">Liquidez Corrente</div>
+                                    <div class="h4 mb-0 text-primary" id="liquidezCorrente">1.5</div>
+                                    <div class="small text-muted">(Ativo Circulante / Passivo Circulante)</div>
+                                    <div class="mt-2">
+                                        <span class="badge bg-success">Ideal: 1.0 - 2.0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-start border-success border-4">
+                                <div class="card-body">
+                                    <div class="text-muted small">Liquidez Seca</div>
+                                    <div class="h4 mb-0 text-success" id="liquidezSeca">1.2</div>
+                                    <div class="small text-muted">(Ativo Circulante - Estoques) / PC</div>
+                                    <div class="mt-2">
+                                        <span class="badge bg-success">Ideal: > 1.0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-start border-info border-4">
+                                <div class="card-body">
+                                    <div class="text-muted small">Liquidez Geral</div>
+                                    <div class="h4 mb-0 text-info" id="liquidezGeral">1.8</div>
+                                    <div class="small text-muted">(Ativo Total / Passivo Total)</div>
+                                    <div class="mt-2">
+                                        <span class="badge bg-success">Ideal: > 1.5</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-start border-warning border-4">
+                                <div class="card-body">
+                                    <div class="text-muted small">Liquidez Imediata</div>
+                                    <div class="h4 mb-0 text-warning" id="liquidezImediata">0.3</div>
+                                    <div class="small text-muted">(Disponível / PC)</div>
+                                    <div class="mt-2">
+                                        <span class="badge bg-warning">Ideal: 0.1 - 0.5</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Indicadores de Rentabilidade -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 fw-bold text-primary">
+                        <i class="fas fa-chart-line me-1"></i> Indicadores de Rentabilidade
+                    </h6>
+                    <select class="form-select form-select-sm w-auto" onchange="atualizarIndicadores()">
+                        <option value="12_meses">Últimos 12 meses</option>
+                        <option value="trimestre">Último trimestre</option>
+                        <option value="mes">Último mês</option>
+                    </select>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <div class="text-muted small">ROA</div>
+                                    <div class="h3 mb-2 text-success" id="roa">12.5%</div>
+                                    <div class="small text-muted">(Lucro Líquido / Ativo Total)</div>
+                                    <div class="mt-3">
+                                        <div class="progress" style="height: 6px;">
+                                            <div class="progress-bar bg-success" style="width: 75%"></div>
+                                        </div>
+                                        <div class="small text-muted mt-1">Média setor: 8%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <div class="text-muted small">ROE</div>
+                                    <div class="h3 mb-2 text-success" id="roe">18.2%</div>
+                                    <div class="small text-muted">(Lucro Líquido / Patrimônio Líquido)</div>
+                                    <div class="mt-3">
+                                        <div class="progress" style="height: 6px;">
+                                            <div class="progress-bar bg-success" style="width: 85%"></div>
+                                        </div>
+                                        <div class="small text-muted mt-1">Média setor: 15%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <div class="text-muted small">Margem Bruta</div>
+                                    <div class="h3 mb-2 text-success" id="margemBruta">35.4%</div>
+                                    <div class="small text-muted">(Lucro Bruto / Receita)</div>
+                                    <div class="mt-3">
+                                        <div class="progress" style="height: 6px;">
+                                            <div class="progress-bar bg-success" style="width: 80%"></div>
+                                        </div>
+                                        <div class="small text-muted mt-1">Média setor: 30%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <div class="text-muted small">Margem Líquida</div>
+                                    <div class="h3 mb-2 text-success" id="margemLiquida">15.8%</div>
+                                    <div class="small text-muted">(Lucro Líquido / Receita)</div>
+                                    <div class="mt-3">
+                                        <div class="progress" style="height: 6px;">
+                                            <div class="progress-bar bg-success" style="width: 70%"></div>
+                                        </div>
+                                        <div class="small text-muted mt-1">Média setor: 12%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Gráfico Radar -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 fw-bold text-primary">
+                        <i class="fas fa-bullseye me-1"></i> Radar de Desempenho Corporativo
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="radarChart"></canvas>
+                </div>
+                <div class="card-footer small text-muted">
+                    Comparação com média do setor (linha tracejada)
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Gráficos Adicionais -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header">
+                    <h6 class="m-0 fw-bold text-primary">
+                        <i class="fas fa-chart-pie me-1"></i> Composição de Despesas
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="composicaoDespesasChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header">
+                    <h6 class="m-0 fw-bold text-primary">
+                        <i class="fas fa-chart-line me-1"></i> Evolução de Indicadores
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="evolucaoIndicadoresChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Gráficos
+let radarChart = null;
+let composicaoDespesasChart = null;
+let evolucaoIndicadoresChart = null;
+
+// Carregar análise
+async function carregarAnalise() {
+    try {
+        const response = await fetch('/api/analise/indicadores');
+        const data = await response.json();
+        
+        // Atualizar indicadores
+        document.getElementById('liquidezCorrente').textContent = data.liquidez.corrente.toFixed(1);
+        document.getElementById('liquidezSeca').textContent = data.liquidez.seca.toFixed(1);
+        document.getElementById('liquidezGeral').textContent = data.liquidez.geral.toFixed(1);
+        document.getElementById('liquidezImediata').textContent = data.liquidez.imediata.toFixed(1);
+        
+        document.getElementById('roa').textContent = data.rentabilidade.roa.toFixed(1) + '%';
+        document.getElementById('roe').textContent = data.rentabilidade.roe.toFixed(1) + '%';
+        document.getElementById('margemBruta').textContent = data.rentabilidade.margem_bruta.toFixed(1) + '%';
+        document.getElementById('margemLiquida').textContent = data.rentabilidade.margem_liquida.toFixed(1) + '%';
+        
+        // Atualizar gráficos
+        atualizarGraficoRadar();
+        atualizarGraficoComposicaoDespesas();
+        atualizarGraficoEvolucaoIndicadores();
+        
+    } catch (error) {
+        console.error('Erro ao carregar análise:', error);
+        mostrarToast('Erro ao carregar dados de análise', 'error');
+    }
+}
+
+// Atualizar gráfico radar
+function atualizarGraficoRadar() {
+    const ctx = document.getElementById('radarChart').getContext('2d');
+    
+    if (radarChart) {
+        radarChart.destroy();
+    }
+    
+    radarChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: ['Liquidez', 'Rentabilidade', 'Endividamento', 'Eficiência', 'Crescimento', 'Solidez'],
+            datasets: [
+                {
+                    label: 'Nossa Empresa',
+                    data: [85, 75, 65, 80, 90, 70],
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    borderColor: '#3b82f6',
+                    borderWidth: 2
+                },
+                {
+                    label: 'Média do Setor',
+                    data: [70, 65, 75, 70, 75, 65],
+                    backgroundColor: 'rgba(148, 163, 184, 0.2)',
+                    borderColor: '#94a3b8',
+                    borderWidth: 1,
+                    borderDash: [5, 5]
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Atualizar gráfico de composição de despesas
+function atualizarGraficoComposicaoDespesas() {
+    const ctx = document.getElementById('composicaoDespesasChart').getContext('2d');
+    
+    if (composicaoDespesasChart) {
+        composicaoDespesasChart.destroy();
+    }
+    
+    composicaoDespesasChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Despesas Fixas', 'Pessoal', 'Operacionais', 'Vendas', 'Investimentos'],
+            datasets: [{
+                data: [35, 40, 15, 5, 5],
+                backgroundColor: [
+                    '#3b82f6',
+                    '#10b981',
+                    '#f59e0b',
+                    '#ef4444',
+                    '#8b5cf6'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+
+// Atualizar gráfico de evolução de indicadores
+function atualizarGraficoEvolucaoIndicadores() {
+    const ctx = document.getElementById('evolucaoIndicadoresChart').getContext('2d');
+    
+    if (evolucaoIndicadoresChart) {
+        evolucaoIndicadoresChart.destroy();
+    }
+    
+    evolucaoIndicadoresChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
+            datasets: [
+                {
+                    label: 'ROA',
+                    data: [10, 11, 12, 11.5, 12.5, 13],
+                    borderColor: '#3b82f6',
+                    tension: 0.4
+                },
+                {
+                    label: 'ROE',
+                    data: [15, 16, 17, 16.5, 17.5, 18.2],
+                    borderColor: '#10b981',
+                    tension: 0.4
+                },
+                {
+                    label: 'Margem Líquida',
+                    data: [12, 13, 14, 14.5, 15, 15.8],
+                    borderColor: '#f59e0b',
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Atualizar indicadores
+function atualizarIndicadores() {
+    mostrarToast('Atualizando indicadores...', 'info');
+    setTimeout(() => {
+        mostrarToast('Indicadores atualizados', 'success');
+    }, 1000);
+}
+
+// Exportar análise
+async function exportarAnalise() {
+    try {
+        const response = await fetch('/api/analise/exportar/pdf', {
+            method: 'GET'
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `analise_financeira_${new Date().toISOString().split('T')[0]}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            mostrarToast('Análise exportada com sucesso!', 'success');
+        } else {
+            mostrarToast('Erro ao exportar análise', 'error');
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        mostrarToast('Erro ao exportar análise', 'error');
+    }
+}
+
+// Mostrar toast
+function mostrarToast(mensagem, tipo = 'info') {
+    const container = document.querySelector('.toast-container');
+    const toastId = 'toast-' + Date.now();
+    
+    const tipos = {
+        info: { icon: 'info-circle', color: 'primary' },
+        success: { icon: 'check-circle', color: 'success' },
+        error: { icon: 'times-circle', color: 'danger' }
+    };
+    
+    const config = tipos[tipo] || tipos.info;
+    
+    const toast = `
+    <div id="${toastId}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-${config.color} text-white">
+            <i class="fas fa-${config.icon} me-2"></i>
+            <strong class="me-auto">${tipo.charAt(0).toUpperCase() + tipo.slice(1)}</strong>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body">
+            ${mensagem}
+        </div>
+    </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', toast);
+    const toastElement = document.getElementById(toastId);
+    const bsToast = new bootstrap.Toast(toastElement, { delay: 3000 });
+    bsToast.show();
+    
+    toastElement.addEventListener('hidden.bs.toast', function () {
+        toastElement.remove();
+    });
+}
+
+// Inicializar
+document.addEventListener('DOMContentLoaded', function() {
+    carregarAnalise();
+});
+</script>
+{% endblock %}

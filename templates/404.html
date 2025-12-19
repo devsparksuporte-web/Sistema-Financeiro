@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}404 - Página Não Encontrada{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 text-center">
+        <h1 class="display-1 text-danger">404</h1>
+        <h2 class="mb-4">Página Não Encontrada</h2>
+        <p class="lead">A página que você está procurando não existe ou foi movida.</p>
+        <a href="{{ url_for('dashboard') if current_user.is_authenticated else url_for('login') }}" class="btn btn-primary mt-3">
+            Voltar para {{ 'Dashboard' if current_user.is_authenticated else 'Login' }}
+        </a>
+    </div>
+</div>
+{% endblock %}

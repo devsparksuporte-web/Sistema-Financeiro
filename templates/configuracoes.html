@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Configurações{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h3 mb-2">
+                <i class="fas fa-cog text-primary me-2"></i> Configurações do Sistema
+            </h1>
+            <p class="text-muted">Ajuste as preferências globais e alertas do seu sistema financeiro.</p>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Preferências Gerais</h6>
+        </div>
+        <div class="card-body">
+            <form id="formConfiguracoes">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="moeda" class="form-label">Moeda Padrão</label>
+                        <select class="form-select" id="moeda" name="moeda" required>
+                            <option value="BRL">Real Brasileiro (BRL)</option>
+                            <option value="USD">Dólar Americano (USD)</option>
+                            <option option value="EUR">Euro (EUR)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="fuso_horario" class="form-label">Fuso Horário</label>
+                        <select class="form-select" id="fuso_horario" name="fuso_horario" required>
+                            <option value="America/Sao_Paulo">America/Sao_Paulo</option>
+                            <option value="America/New_York">America/New_York</option>
+                            <option value="Europe/London">Europe/London</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="email_notificacao" class="form-label">E-mail para Notificações</label>
+                        <input type="email" class="form-control" id="email_notificacao" name="email_notificacao" placeholder="seu.email@exemplo.com">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="limite_alerta" class="form-label">Limite de Alerta de Despesas (R$)</label>
+                        <input type="number" class="form-control" id="limite_alerta" name="limite_alerta" step="0.01" min="0" placeholder="Ex: 5000.00">
+                        <div class="form-text">Receba um alerta quando suas despesas mensais ultrapassarem este valor.</div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Salvar Configurações</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const formConfiguracoes = document.getElementById('formConfiguracoes');
+        
+        // Função para mostrar toast (simulação)
+        function mostrarToast(mensagem, tipo = 'info') {
+            console.log(`[Toast ${tipo.toUpperCase()}]: ${mensagem}`);
+            // Implementação real do toast
+        }
+
+        // 1. Carregar Configurações
+        async function carregarConfiguracoes() {
+            try {
+                const response = await fetch('/api/configuracoes');
+                const data = await response.json();
+
+                if (data.success && data.configuracao) {
+                    const config = data.configuracao;
+                    document.getElementById('moeda').value = config.moeda || 'BRL';
+                    document.getElementById('fuso_horario').value = config.fuso_horario || 'America/Sao_Paulo';
+                    document.getElementById('email_notificacao').value = config.email_notificacao || '';
+                    document.getElementById('limite_alerta').value = config.limite_alerta || '';
+                } else {
+                    mostrarToast('Erro ao carregar configurações.', 'error');
+                }
+            } catch (error) {
+                mostrarToast('Erro de conexão ao carregar configurações.', 'error');
+            }
+        }
+
+        // 2. Salvar Configurações
+        formConfiguracoes.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const dados = {
+                moeda: document.getElementById('moeda').value,
+                fuso_horario: document.getElementById('fuso_horario').value,
+                email_notificacao: document.getElementById('email_notificacao').value,
+                limite_alerta: document.getElementById('limite_alerta').value
+            };
+
+            try {
+                const response = await fetch('/api/configuracoes', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(dados)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    mostrarToast(data.message, 'success');
+                } else {
+                    mostrarToast(data.message, 'error');
+                }
+            } catch (error) {
+                mostrarToast('Erro ao salvar configurações.', 'error');
+            }
+        });
+
+        carregarConfiguracoes();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Sistema Financeiro{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-xl-5 col-lg-6 col-md-8">
+            <div class="card shadow-lg border-0 rounded-lg mt-5">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="text-center font-weight-light my-4">
+                        <i class="fas fa-building me-2"></i>Sistema Financeiro
+                    </h3>
+                    <p class="text-center mb-0">Contabilidade Carmo & Gueiros</p>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-4">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-users me-2"></i>Usuários de Teste
+                        </h6>
+                        <div class="small">
+                            <div><strong>admin</strong> / admin123 (Administrador)</div>
+                            <div><strong>gerente</strong> / gerente123 (Gerente Financeiro)</div>
+                            <div><strong>analista</strong> / analista123 (Analista de Custos)</div>
+                            <div><strong>usuario</strong> / senha123 (Usuário Padrão)</div>
+                        </div>
+                    </div>
+                    
+                    <div id="loginAlert" class="alert alert-danger d-none" role="alert"></div>
+                    
+                    <form id="loginForm">
+                        <div class="form-floating mb-3">
+                            <input class="form-control" id="username" type="text" 
+                                   placeholder="Digite seu usuário" autocomplete="username" required>
+                            <label for="username">
+                                <i class="fas fa-user me-1"></i>Usuário
+                            </label>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input class="form-control" id="password" type="password" 
+                                   placeholder="Digite sua senha" autocomplete="current-password" minlength="6" required>
+                            <label for="password">
+                                <i class="fas fa-lock me-1"></i>Senha
+                            </label>
+                            <div class="form-text small">
+                                Senha deve ter pelo menos 6 caracteres
+                            </div>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" id="rememberMe" type="checkbox">
+                            <label class="form-check-label" for="rememberMe">
+                                Lembrar-me
+                            </label>
+                            <a href="#" class="float-end small">Esqueci minha senha</a>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg" id="loginBtn">
+                                <span id="loginText">
+                                    <i class="fas fa-sign-in-alt me-1"></i>Entrar
+                                </span>
+                                <span id="loginSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center mt-4">
+                        <p class="small text-muted">
+                            <i class="fas fa-keyboard me-1"></i>Atalhos: Ctrl+1 (Preencher admin) • Enter (Login)
+                        </p>
+                    </div>
+                </div>
+                <div class="card-footer text-center py-3">
+                    <div class="small">
+                        <i class="fas fa-shield-alt me-1"></i>Sistema seguro • v2.0.0
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('loginForm');
+    const alertDiv = document.getElementById('loginAlert');
+    const loginBtn = document.getElementById('loginBtn');
+    const loginText = document.getElementById('loginText');
+    const loginSpinner = document.getElementById('loginSpinner');
+    
+    // Preencher automaticamente com admin (Ctrl+1)
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === '1') {
+            e.preventDefault();
+            document.getElementById('username').value = 'admin';
+            document.getElementById('password').value = 'admin123';
+            mostrarMensagem('Credenciais de administrador preenchidas', 'info');
+        }
+    });
+    
+    // Login com Enter
+    document.getElementById('password').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            form.dispatchEvent(new Event('submit'));
+        }
+    });
+    
+    // Submissão do formulário
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+        const remember = document.getElementById('rememberMe').checked;
+        
+        // Validação básica
+        if (!username || !password) {
+            mostrarMensagem('Preencha usuário e senha', 'error');
+            return;
+        }
+        
+        if (password.length < 6) {
+            mostrarMensagem('A senha deve ter pelo menos 6 caracteres', 'error');
+            return;
+        }
+        
+        // Mostrar loading
+        loginBtn.disabled = true;
+        loginText.classList.add('d-none');
+        loginSpinner.classList.remove('d-none');
+        
+        try {
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password,
+                    remember: remember
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Login bem-sucedido
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                } else {
+                    window.location.href = '/';
+                }
+            } else {
+                mostrarMensagem(data.message || 'Erro ao fazer login', 'error');
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+            mostrarMensagem('Erro de conexão com o servidor', 'error');
+        } finally {
+            // Restaurar botão
+            loginBtn.disabled = false;
+            loginText.classList.remove('d-none');
+            loginSpinner.classList.add('d-none');
+        }
+    });
+    
+    function mostrarMensagem(texto, tipo) {
+        alertDiv.textContent = texto;
+        alertDiv.className = `alert alert-${tipo === 'error' ? 'danger' : tipo === 'info' ? 'info' : 'success'}`;
+        alertDiv.classList.remove('d-none');
+        
+        if (tipo !== 'error') {
+            setTimeout(() => {
+                alertDiv.classList.add('d-none');
+            }, 3000);
+        }
+    }
+});
+</script>
+{% endblock %}

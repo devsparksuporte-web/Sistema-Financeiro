@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Sistema Financeiro</title>
+</head>
+<body>
+    <h1>Dashboard</h1>
+    <p>Bem-vindo, {{ current_user.nome }}!</p>
+    <p>Saldo do mês: R$ {{ saldo_mes|format_currency if saldo_mes else 0 }}</p>
+    <a href="{{ url

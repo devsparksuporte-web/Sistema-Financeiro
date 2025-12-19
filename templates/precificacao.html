@@ -1,0 +1,588 @@
+{% extends "base.html" %}
+
+{% block title %}Precificação{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Cabeçalho -->
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h3 mb-2">
+                <i class="fas fa-calculator text-primary me-2"></i> Calculadora de Precificação
+            </h1>
+            <p class="text-muted">Análise de custos, markup, margens e simulações avançadas</p>
+        </div>
+        <div class="col-auto">
+            <div class="btn-group">
+                <button class="btn btn-outline-success" onclick="salvarCalculo()">
+                    <i class="fas fa-save me-1"></i> Salvar Modelo
+                </button>
+                <button class="btn btn-outline-info" onclick="exportarCalculo()">
+                    <i class="fas fa-file-pdf me-1"></i> Exportar Análise
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Inputs de Precificação -->
+    <div class="row mb-4">
+        <div class="col-xl-2 col-md-4 mb-3">
+            <label class="form-label">
+                <i class="fas fa-tag me-1"></i> Custo do Produto (R$)
+                <i class="fas fa-question-circle text-muted ms-1" 
+                   title="Valor de compra do produto sem impostos e frete"></i>
+            </label>
+            <input type="number" id="custoProduto" class="form-control" value="10" step="0.01" min="0">
+        </div>
+        
+        <div class="col-xl-2 col-md-4 mb-3">
+            <label class="form-label">
+                <i class="fas fa-percentage me-1"></i> Custos Adicionais (%)
+                <i class="fas fa-question-circle text-muted ms-1" 
+                   title="IPI, frete, seguro, embalagens especiais, armazenagem"></i>
+            </label>
+            <input type="number" id="custosAdicionais" class="form-control" value="38" step="0.1" min="0" max="100">
+        </div>
+        
+        <div class="col-xl-2 col-md-4 mb-3">
+            <label class="form-label">
+                <i class="fas fa-times me-1"></i> Multiplicador
+                <i class="fas fa-question-circle text-muted ms-1" 
+                   title="Fator de multiplicação sobre custo total"></i>
+            </label>
+            <input type="number" id="multiplicador" class="form-control" value="4" step="0.1" min="1">
+        </div>
+        
+        <div class="col-xl-2 col-md-4 mb-3">
+            <label class="form-label">
+                <i class="fas fa-receipt me-1"></i> Impostos (%)
+                <i class="fas fa-question-circle text-muted ms-1" 
+                   title="ICMS, PIS, COFINS, ISS - sobre preço de venda"></i>
+            </label>
+            <input type="number" id="impostos" class="form-control" value="11" step="0.1" min="0" max="100">
+        </div>
+        
+        <div class="col-xl-2 col-md-4 mb-3">
+            <label class="form-label">
+                <i class="fas fa-handshake me-1"></i> Comissão (%)
+                <i class="fas fa-question-circle text-muted ms-1" 
+                   title="Vendedores, representantes, corretores - sobre preço de venda"></i>
+            </label>
+            <input type="number" id="comissao" class="form-control" value="3" step="0.1" min="0" max="100">
+        </div>
+        
+        <div class="col-xl-2 col-md-4 mb-3">
+            <label class="form-label">
+                <i class="fas fa-percent me-1"></i> Desconto (%)
+                <i class="fas fa-question-circle text-muted ms-1" 
+                   title="Para cliente final, promoções, volume, pagamento à vista"></i>
+            </label>
+            <input type="number" id="desconto" class="form-control" value="50" step="0.1" min="0" max="100">
+        </div>
+    </div>
+    
+    <!-- Resultados -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-primary shadow">
+                <div class="card-header bg-primary text-white py-2">
+                    <h6 class="mb-0">
+                        <i class="fas fa-money-bill-wave me-1"></i> Custo Total
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    <h3 class="card-title" id="custoTotal">R$ 0,00</h3>
+                    <p class="card-text small text-muted mb-0">
+                        CP: <span id="cpValue">R$ 0,00</span> + CA: <span id="caValue">0</span>%
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-success shadow">
+                <div class="card-header bg-success text-white py-2">
+                    <h6 class="mb-0">
+                        <i class="fas fa-tag me-1"></i> Preço de Venda
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    <h3 class="card-title" id="precoVenda">R$ 0,00</h3>
+                    <p class="card-text small text-muted mb-0">
+                        Sem impostos/comissão
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-info shadow">
+                <div class="card-header bg-info text-white py-2">
+                    <h6 class="mb-0">
+                        <i class="fas fa-bullseye me-1"></i> Preço Final
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    <h3 class="card-title" id="precoFinal">R$ 0,00</h3>
+                    <p class="card-text small text-muted mb-0">
+                        Com impostos e desconto
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-warning shadow">
+                <div class="card-header bg-warning text-white py-2">
+                    <h6 class="mb-0">
+                        <i class="fas fa-chart-line me-1"></i> Lucro por Unidade
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    <h3 class="card-title" id="lucroUnidade">R$ 0,00</h3>
+                    <p class="card-text small text-muted mb-0">
+                        Após todas as deduções
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Segunda Linha de Resultados -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card shadow">
+                <div class="card-header bg-light py-2">
+                    <h6 class="mb-0">
+                        <i class="fas fa-chart-bar me-1"></i> Markup Bruto
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    <h4 class="card-title text-primary" id="markupBruto">0.00×</h4>
+                    <p class="card-text small text-muted mb-0">
+                        Sobre custo total
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card shadow">
+                <div class="card-header bg-light py-2">
+                    <h6 class="mb-0">
+                        <i class="fas fa-chart-line me-1"></i> Markup Líquido
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    <h4 class="card-title text-success" id="markupLiquido">0.00×</h4>
+                    <p class="card-text small text-muted mb-0">
+                        Após impostos
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card shadow">
+                <div class="card-header bg-light py-2">
+                    <h6 class="mb-0">
+                        <i class="fas fa-bullseye me-1"></i> Margem Bruta
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    <h4 class="card-title text-info" id="margemBruta">0%</h4>
+                    <p class="card-text small text-muted mb-0">
+                        (PV - CT) / PV
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card shadow">
+                <div class="card-header bg-light py-2">
+                    <h6 class="mb-0">
+                        <i class="fas fa-coins me-1"></i> Margem Líquida
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    <h4 class="card-title text-warning" id="margemLiquida">0%</h4>
+                    <p class="card-text small text-muted mb-0">
+                        (PF - CT) / PF
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Gráficos -->
+    <div class="row">
+        <div class="col-xl-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-3">
+                    <h6 class="m-0 fw-bold text-primary">
+                        <i class="fas fa-chart-line me-1"></i> Análise de Sensibilidade
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="sensibilidadeChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-3">
+                    <h6 class="m-0 fw-bold text-primary">
+                        <i class="fas fa-balance-scale me-1"></i> Ponto de Equilíbrio
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="breakEvenChart"></canvas>
+                    <div class="text-center mt-3">
+                        <p class="mb-0">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Quantidade mínima para cobrir custos: 
+                            <span id="quantidadeEquilibrio" class="fw-bold">0</span> unidades
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Gráficos
+let sensibilidadeChart = null;
+let breakEvenChart = null;
+
+// Formatar moeda
+function formatCurrency(value) {
+    return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    }).format(value);
+}
+
+// Calcular precificação
+function calcularPrecificacao() {
+    try {
+        const cp = parseFloat(document.getElementById('custoProduto').value) || 0;
+        const custosPct = parseFloat(document.getElementById('custosAdicionais').value) || 0;
+        const mult = parseFloat(document.getElementById('multiplicador').value) || 0;
+        const impPct = parseFloat(document.getElementById('impostos').value) || 0;
+        const comPct = parseFloat(document.getElementById('comissao').value) || 0;
+        const descPct = parseFloat(document.getElementById('desconto').value) || 0;
+        
+        // Cálculos
+        const ct = cp * (1 + custosPct / 100); // Custo total
+        const pv = ct * mult; // Preço de venda
+        const pf = pv * (1 - descPct / 100); // Preço final
+        const enc = pf * ((impPct + comPct) / 100); // Encargos
+        const lucro = pf - enc - ct; // Lucro por unidade
+        
+        // Markups e margens
+        const mkBruto = ct > 0 ? (pv / ct).toFixed(2) : 0;
+        const mkLiquido = ct > 0 ? (lucro / ct).toFixed(2) : 0;
+        const margemBruta = pv > 0 ? ((pv - ct) / pv * 100).toFixed(1) : 0;
+        const margemLiquida = pf > 0 ? ((pf - ct - enc) / pf * 100).toFixed(1) : 0;
+        
+        // Atualizar valores
+        document.getElementById('custoTotal').textContent = formatCurrency(ct);
+        document.getElementById('precoVenda').textContent = formatCurrency(pv);
+        document.getElementById('precoFinal').textContent = formatCurrency(pf);
+        document.getElementById('lucroUnidade').textContent = formatCurrency(lucro);
+        document.getElementById('markupBruto').textContent = mkBruto + '×';
+        document.getElementById('markupLiquido').textContent = mkLiquido + '×';
+        document.getElementById('margemBruta').textContent = margemBruta + '%';
+        document.getElementById('margemLiquida').textContent = margemLiquida + '%';
+        
+        // Valores detalhados
+        document.getElementById('cpValue').textContent = formatCurrency(cp);
+        document.getElementById('caValue').textContent = custosPct;
+        
+        // Atualizar gráficos
+        atualizarGraficoSensibilidade(cp, custosPct, mult, impPct, comPct, descPct);
+        atualizarGraficoBreakEven(cp, custosPct, mult);
+        
+    } catch (error) {
+        console.error('Erro no cálculo:', error);
+        mostrarToast('Erro no cálculo de precificação', 'error');
+    }
+}
+
+// Atualizar gráfico de sensibilidade
+function atualizarGraficoSensibilidade(cp, custosPct, mult, impPct, comPct, descPct) {
+    const ctx = document.getElementById('sensibilidadeChart').getContext('2d');
+    
+    const ct = cp * (1 + custosPct / 100);
+    
+    // Preparar dados para variação de -20% a +20%
+    const labels = [];
+    const dados = [];
+    
+    for (let i = -20; i <= 20; i += 5) {
+        const variacao = 1 + (i / 100);
+        const pv_variado = ct * mult * variacao;
+        const pf_variado = pv_variado * (1 - descPct / 100);
+        const enc_variado = pf_variado * ((impPct + comPct) / 100);
+        const lucro_variado = pf_variado - enc_variado - ct;
+        
+        labels.push(`${i}%`);
+        dados.push(lucro_variado);
+    }
+    
+    if (sensibilidadeChart) {
+        sensibilidadeChart.destroy();
+    }
+    
+    sensibilidadeChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Lucro',
+                data: dados,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return 'R$ ' + value.toFixed(0);
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Atualizar gráfico de break-even
+function atualizarGraficoBreakEven(cp, custosPct, mult) {
+    const ctx = document.getElementById('breakEvenChart').getContext('2d');
+    
+    const ct = cp * (1 + custosPct / 100);
+    const pv = ct * mult;
+    const custosFixos = 1000; // Valor fixo para simulação
+    
+    // Preparar dados
+    const labels = [];
+    const receitas = [];
+    const custos = [];
+    
+    for (let i = 0; i <= 200; i += 20) {
+        labels.push(i);
+        receitas.push(i * pv);
+        custos.push(ct * i + custosFixos);
+    }
+    
+    // Ponto de equilíbrio
+    const pontoEquilibrio = Math.ceil(custosFixos / (pv - ct));
+    document.getElementById('quantidadeEquilibrio').textContent = pontoEquilibrio;
+    
+    if (breakEvenChart) {
+        breakEvenChart.destroy();
+    }
+    
+    breakEvenChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Receitas',
+                    data: receitas,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    fill: true
+                },
+                {
+                    label: 'Custos',
+                    data: custos,
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return 'R$ ' + (value / 1000).toFixed(0) + 'k';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Salvar cálculo
+async function salvarCalculo() {
+    try {
+        const nomeProduto = prompt('Nome do produto:', 'Produto ' + new Date().toLocaleDateString('pt-BR'));
+        if (!nomeProduto) return;
+        
+        const cp = parseFloat(document.getElementById('custoProduto').value) || 0;
+        const custosPct = parseFloat(document.getElementById('custosAdicionais').value) || 0;
+        const mult = parseFloat(document.getElementById('multiplicador').value) || 0;
+        const impPct = parseFloat(document.getElementById('impostos').value) || 0;
+        const comPct = parseFloat(document.getElementById('comissao').value) || 0;
+        const descPct = parseFloat(document.getElementById('desconto').value) || 0;
+        
+        const ct = cp * (1 + custosPct / 100);
+        const pv = ct * mult;
+        const pf = pv * (1 - descPct / 100);
+        const enc = pf * ((impPct + comPct) / 100);
+        const lucro = pf - enc - ct;
+        
+        const mkBruto = ct > 0 ? (pv / ct) : 0;
+        const mkLiquido = ct > 0 ? (lucro / ct) : 0;
+        const margemBruta = pv > 0 ? ((pv - ct) / pv * 100) : 0;
+        const margemLiquida = pf > 0 ? ((pf - ct - enc) / pf * 100) : 0;
+        
+        const response = await fetch('/api/precificacao/salvar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                nome_produto: nomeProduto,
+                custo_produto: cp,
+                custos_adicionais_pct: custosPct,
+                multiplicador: mult,
+                impostos_pct: impPct,
+                comissao_pct: comPct,
+                desconto_pct: descPct,
+                custo_total: ct,
+                preco_venda: pv,
+                preco_final: pf,
+                lucro_unidade: lucro,
+                markup_bruto: mkBruto,
+                markup_liquido: mkLiquido,
+                margem_bruta: margemBruta,
+                margem_liquida: margemLiquida
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            mostrarToast('Cálculo salvo com sucesso!', 'success');
+        } else {
+            mostrarToast(data.message || 'Erro ao salvar cálculo', 'error');
+        }
+        
+    } catch (error) {
+        console.error('Erro:', error);
+        mostrarToast('Erro ao salvar cálculo', 'error');
+    }
+}
+
+// Exportar cálculo
+async function exportarCalculo() {
+    try {
+        const response = await fetch('/api/precificacao/exportar/pdf', {
+            method: 'GET'
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `calculo_precificacao_${new Date().toISOString().split('T')[0]}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            mostrarToast('Cálculo exportado com sucesso!', 'success');
+        } else {
+            mostrarToast('Erro ao exportar cálculo', 'error');
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        mostrarToast('Erro ao exportar cálculo', 'error');
+    }
+}
+
+// Mostrar toast
+function mostrarToast(mensagem, tipo = 'info') {
+    const container = document.querySelector('.toast-container');
+    const toastId = 'toast-' + Date.now();
+    
+    const tipos = {
+        info: { icon: 'info-circle', color: 'primary' },
+        success: { icon: 'check-circle', color: 'success' },
+        error: { icon: 'times-circle', color: 'danger' }
+    };
+    
+    const config = tipos[tipo] || tipos.info;
+    
+    const toast = `
+    <div id="${toastId}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-${config.color} text-white">
+            <i class="fas fa-${config.icon} me-2"></i>
+            <strong class="me-auto">${tipo.charAt(0).toUpperCase() + tipo.slice(1)}</strong>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body">
+            ${mensagem}
+        </div>
+    </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', toast);
+    const toastElement = document.getElementById(toastId);
+    const bsToast = new bootstrap.Toast(toastElement, { delay: 3000 });
+    bsToast.show();
+    
+    toastElement.addEventListener('hidden.bs.toast', function () {
+        toastElement.remove();
+    });
+}
+
+// Event listeners para inputs
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = ['custoProduto', 'custosAdicionais', 'multiplicador', 'impostos', 'comissao', 'desconto'];
+    
+    inputs.forEach(id => {
+        document.getElementById(id).addEventListener('input', calcularPrecificacao);
+    });
+    
+    // Calcular inicialmente
+    calcularPrecificacao();
+    
+    // Atalhos de teclado
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 's') {
+            e.preventDefault();
+            salvarCalculo();
+        } else if (e.ctrlKey && e.key === 'e') {
+            e.preventDefault();
+            exportarCalculo();
+        }
+    });
+});
+</script>
+{% endblock %}

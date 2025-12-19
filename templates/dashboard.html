@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h3 mb-2">
+                <i class="fas fa-tachometer-alt text-primary me-2"></i> Dashboard
+            </h1>
+            <p class="text-muted">Visão geral das finanças</p>
+        </div>
+    </div>
+    
+    <!-- Estatísticas -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card stats-card stats-card-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted mb-1">Saldo do Mês</h6>
+                            <h3 class="mb-0">{{ saldo_mes|format_currency }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-wallet fa-2x text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card stats-card stats-card-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted mb-1">Receitas</h6>
+                            <h3 class="mb-0">{{ receitas_mes|format_currency }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-arrow-up fa-2x text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card stats-card stats-card-danger">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted mb-1">Despesas</h6>
+                            <h3 class="mb-0">{{ despesas_mes|format_currency }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-arrow-down fa-2x text-danger"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card stats-card stats-card-info">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted mb-1">Ponto de Equilíbrio</h6>
+                            <h3 class="mb-0">{{ ponto_equilibrio_valor|format_currency }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-balance-scale fa-2x text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Análise de Despesas e Ponto de Equilíbrio -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">5 Maiores Despesas</h6>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Aqui você vê automaticamente as 5 maiores despesas fixas, a concentração delas sobre o total e uma leitura profissional. Use esta aba para discutir corte de custos, renegociação e reorganização do orçamento.</p>
+                    
+                    {% if top_despesas %}
+                        <ul class="list-group list-group-flush">
+                            {% for despesa in top_despesas %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    {{ despesa.categoria|capitalize }}
+                                    <span class="badge bg-danger rounded-pill">{{ despesa.total|format_currency }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="alert alert-warning" role="alert">
+                            Nenhuma despesa com valor preenchido na aba Despesas.
+                        </div>
+                    {% endif %}
+
+                    <h6 class="mt-4 text-muted">Concentração e riscos</h6>
+                    <p class="small">Cadastre e preencha as despesas fixas para enxergar concentração, riscos e oportunidades de corte.</p>
+                    
+                    <h6 class="mt-4 text-muted">Recomendações práticas</h6>
+                    <p class="small">Comece estruturando o plano de contas de despesas; depois volte aqui para usar a análise profunda na consultoria.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Gráfico do Ponto de Equilíbrio</h6>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Linha azul = Receita bruta; linha tracejada = Custo total (fixo + variável). O cruzamento indica o ponto de equilíbrio.</p>
+                    
+                    {% if ponto_equilibrio_valor > 0 %}
+                        <div class="alert alert-success" role="alert">
+                            Ponto de Equilíbrio Calculado: **{{ ponto_equilibrio_valor|format_currency }}**
+                        </div>
+                        <!-- Simulação de Gráfico (Chart.js) -->
+                        <canvas id="pontoEquilibrioChart"></canvas>
+                    {% else %}
+                        <div class="alert alert-danger" role="alert">
+                            Não foi possível calcular o ponto de equilíbrio com os dados informados.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficos de Receitas e Despesas -->
+    <div class="row mb-4">
+    </div>
+    
+    <!-- Conteúdo -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header">
+                    <h6 class="m-0 fw-bold">
+                        <i class="fas fa-bolt me-1"></i> Ações Rápidas
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <a href="{{ url_for('gerencial') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-file-invoice-dollar me-1"></i> Gerencial
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{{ url_for('precificacao') }}" class="btn btn-outline-success w-100">
+                                <i class="fas fa-calculator me-1"></i> Precificação
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{{ url_for('analise') }}" class="btn btn-outline-info w-100">
+                                <i class="fas fa-chart-bar me-1"></i> Análise
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{{ url_for('relatorios') }}" class="btn btn-outline-warning w-100">
+                                <i class="fas fa-file-alt me-1"></i> Relatórios
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header">
+                    <h6 class="m-0 fw-bold">
+                        <i class="fas fa-info-circle me-1"></i> Informações do Sistema
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-user me-2 text-primary"></i>
+                            <strong>Usuário:</strong> {{ current_user.nome }}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-shield-alt me-2 text-success"></i>
+                            <strong>Perfil:</strong> {{ current_user.perfil|title }}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-calendar me-2 text-info"></i>
+                            <strong>Data:</strong> {{ hoje|format_date }}
+                        </li>
+                        <li>
+                            <i class="fas fa-database me-2 text-warning"></i>
+                            <strong>Sistema:</strong> Versão 1.0
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Carregar estatísticas atualizadas via API
+async function carregarEstatisticas() {
+    try {
+        const response = await fetch('/api/dashboard/estatisticas');
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log('Estatísticas carregadas:', data.estatisticas);
+        }
+    } catch (error) {
+        console.error('Erro ao carregar estatísticas:', error);
+    }
+}
+
+// Inicializar
+document.addEventListener('DOMContentLoaded', function() {
+    carregarEstatisticas();
+});
+</script>
+{% endblock %}

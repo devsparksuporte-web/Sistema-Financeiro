@@ -1,0 +1,540 @@
+{% extends "base.html" %}
+
+{% block title %}Relatórios{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Cabeçalho -->
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h3 mb-2">
+                <i class="fas fa-file-alt text-primary me-2"></i> Centro de Relatórios
+            </h1>
+            <p class="text-muted">Geração, exportação e gestão de relatórios financeiros completos</p>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-outline-primary" onclick="agendarRelatorio()">
+                <i class="fas fa-calendar me-1"></i> Agendar
+            </button>
+        </div>
+    </div>
+    
+    <!-- Ações Rápidas -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h6 class="card-title text-muted mb-3">Relatórios Rápidos</h6>
+                    <div class="row g-2">
+                        <div class="col-md-2 col-6">
+                            <button class="btn btn-primary w-100" onclick="gerarRelatorio('despesas')">
+                                <i class="fas fa-file-invoice-dollar me-1"></i> Despesas
+                            </button>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <button class="btn btn-success w-100" onclick="gerarRelatorio('receitas')">
+                                <i class="fas fa-chart-line me-1"></i> Receitas
+                            </button>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <button class="btn btn-info w-100" onclick="gerarRelatorio('lucratividade')">
+                                <i class="fas fa-coins me-1"></i> Lucratividade
+                            </button>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <button class="btn btn-warning w-100" onclick="gerarRelatorio('fluxo_caixa')">
+                                <i class="fas fa-exchange-alt me-1"></i> Fluxo de Caixa
+                            </button>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <button class="btn btn-danger w-100" onclick="gerarRelatorio('balanco')">
+                                <i class="fas fa-balance-scale me-1"></i> Balanço
+                            </button>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <button class="btn btn-secondary w-100" onclick="gerarRelatorio('dre')">
+                                <i class="fas fa-chart-bar me-1"></i> DRE
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Relatórios Personalizados -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 fw-bold">
+                        <i class="fas fa-cogs me-1"></i> Relatórios Personalizados
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Tipo de Relatório</label>
+                            <select id="tipoRelatorio" class="form-select">
+                                <option value="despesas">Despesas Detalhadas</option>
+                                <option value="receitas">Receitas por Cliente</option>
+                                <option value="lucratividade">Lucratividade por Produto</option>
+                                <option value="fluxo_caixa">Fluxo de Caixa Projetado</option>
+                                <option value="indicadores">Indicadores Financeiros</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Período</label>
+                            <select id="periodoRelatorio" class="form-select">
+                                <option value="este_mes">Este Mês</option>
+                                <option value="mes_anterior">Mês Anterior</option>
+                                <option value="este_trimestre">Este Trimestre</option>
+                                <option value="trimestre_anterior">Trimestre Anterior</option>
+                                <option value="este_ano">Este Ano</option>
+                                <option value="ano_anterior">Ano Anterior</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Formato</label>
+                            <select id="formatoRelatorio" class="form-select">
+                                <option value="pdf">PDF (Alta Qualidade)</option>
+                                <option value="excel">Excel (Editável)</option>
+                                <option value="csv">CSV (Importação)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Agrupar por</label>
+                            <select id="agruparRelatorio" class="form-select">
+                                <option value="categoria">Categoria</option>
+                                <option value="fornecedor">Fornecedor</option>
+                                <option value="departamento">Departamento</option>
+                                <option value="projeto">Projeto</option>
+                                <option value="centro_custo">Centro de Custo</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Ordenar por</label>
+                            <select id="ordenarRelatorio" class="form-select">
+                                <option value="valor_desc">Maior Valor</option>
+                                <option value="valor_asc">Menor Valor</option>
+                                <option value="data_desc">Data Recente</option>
+                                <option value="data_asc">Data Antiga</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Incluir Gráficos</label>
+                            <select id="graficosRelatorio" class="form-select">
+                                <option value="sim">Sim</option>
+                                <option value="nao">Não</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button class="btn btn-primary btn-lg" onclick="gerarRelatorioPersonalizado()">
+                            <i class="fas fa-rocket me-2"></i> Gerar Relatório Personalizado
+                        </button>
+                        <button class="btn btn-outline-secondary ms-2" onclick="previsualizarRelatorio()">
+                            <i class="fas fa-eye me-2"></i> Pré-visualizar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Relatórios Agendados -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 fw-bold">
+                        <i class="fas fa-calendar-alt me-1"></i> Relatórios Agendados
+                    </h6>
+                    <button class="btn btn-sm btn-outline-primary" onclick="novoAgendamento()">
+                        <i class="fas fa-plus me-1"></i> Novo
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Relatório</th>
+                                    <th>Frequência</th>
+                                    <th>Próxima Execução</th>
+                                    <th>Destinatários</th>
+                                    <th>Formato</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="relatoriosAgendadosTable">
+                                <tr>
+                                    <td colspan="7" class="text-center py-4">
+                                        <i class="fas fa-calendar fa-2x text-muted mb-3"></i>
+                                        <p class="text-muted">Nenhum relatório agendado</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Histórico de Relatórios -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 fw-bold">
+                        <i class="fas fa-history me-1"></i> Histórico de Relatórios
+                    </h6>
+                    <span class="badge bg-primary" id="totalRelatorios">0</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Relatório</th>
+                                    <th>Tipo</th>
+                                    <th>Período</th>
+                                    <th>Tamanho</th>
+                                    <th>Gerado por</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historicoRelatoriosTable">
+                                <tr>
+                                    <td colspan="7" class="text-center py-4">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Carregando...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Agendamento -->
+<div class="modal fade" id="modalAgendamento" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Agendar Relatório</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formAgendamento">
+                    <div class="mb-3">
+                        <label class="form-label">Nome do Relatório</label>
+                        <input type="text" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tipo</label>
+                        <select class="form-select" required>
+                            <option value="despesas">Despesas</option>
+                            <option value="receitas">Receitas</option>
+                            <option value="lucratividade">Lucratividade</option>
+                            <option value="fluxo_caixa">Fluxo de Caixa</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Frequência</label>
+                        <select class="form-select" required>
+                            <option value="diario">Diário</option>
+                            <option value="semanal">Semanal</option>
+                            <option value="mensal">Mensal</option>
+                            <option value="trimestral">Trimestral</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Próxima Execução</label>
+                        <input type="date" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Destinatários (e-mails separados por vírgula)</label>
+                        <textarea class="form-control" rows="3" placeholder="email1@exemplo.com, email2@exemplo.com"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="salvarAgendamento()">Agendar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Carregar histórico de relatórios
+async function carregarHistoricoRelatorios() {
+    try {
+        const response = await fetch('/api/relatorios/historico');
+        const data = await response.json();
+        
+        atualizarHistoricoRelatorios(data.relatorios);
+        
+    } catch (error) {
+        console.error('Erro ao carregar histórico:', error);
+        mostrarToast('Erro ao carregar histórico de relatórios', 'error');
+    }
+}
+
+// Atualizar histórico de relatórios
+function atualizarHistoricoRelatorios(relatorios) {
+    const tbody = document.getElementById('historicoRelatoriosTable');
+    document.getElementById('totalRelatorios').textContent = relatorios.length;
+    
+    if (relatorios.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center py-4">
+                    <i class="fas fa-inbox fa-2x text-muted mb-3"></i>
+                    <p class="text-muted">Nenhum relatório gerado</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    let html = '';
+    
+    relatorios.forEach(relatorio => {
+        const data = new Date(relatorio.data_geracao).toLocaleDateString('pt-BR');
+        const tamanho = formatBytes(relatorio.tamanho || 0);
+        
+        // Ícone por tipo
+        let icon = 'file';
+        let color = 'secondary';
+        
+        switch(relatorio.formato) {
+            case 'pdf':
+                icon = 'file-pdf';
+                color = 'danger';
+                break;
+            case 'excel':
+                icon = 'file-excel';
+                color = 'success';
+                break;
+            case 'csv':
+                icon = 'file-csv';
+                color = 'info';
+                break;
+        }
+        
+        html += `
+        <tr>
+            <td>${data}</td>
+            <td>
+                <div class="fw-bold">${relatorio.nome}</div>
+                <small class="text-muted">${relatorio.tipo}</small>
+            </td>
+            <td>
+                <span class="badge bg-light text-dark">${relatorio.tipo}</span>
+            </td>
+            <td>${(relatorio.parametros && relatorio.parametros.periodo) ? relatorio.parametros.periodo : '-'}</td>
+            <td>${tamanho}</td>
+            <td>${relatorio.usuario_nome || '-'}</td>
+            <td>
+                <button class="btn btn-sm btn-outline-primary" onclick="baixarRelatorio(${relatorio.id})">
+                    <i class="fas fa-download"></i>
+                </button>
+            </td>
+        </tr>
+        `;
+    });
+    
+    tbody.innerHTML = html;
+}
+
+// Formatar bytes
+function formatBytes(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Gerar relatório rápido
+async function gerarRelatorio(tipo) {
+    try {
+        const formato = document.getElementById('formatoRelatorio').value;
+        const periodo = document.getElementById('periodoRelatorio').value;
+        
+        const response = await fetch('/api/relatorios/gerar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                tipo: tipo,
+                formato: formato,
+                periodo: periodo
+            })
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `relatorio_${tipo}_${new Date().toISOString().split('T')[0]}.${formato}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            mostrarToast('Relatório gerado com sucesso!', 'success');
+            
+            // Atualizar histórico
+            setTimeout(carregarHistoricoRelatorios, 1000);
+        } else {
+            const error = await response.json();
+            throw new Error(error.message || 'Erro ao gerar relatório');
+        }
+        
+    } catch (error) {
+        console.error('Erro ao gerar relatório:', error);
+        mostrarToast(error.message || 'Erro ao gerar relatório', 'error');
+    }
+}
+
+// Gerar relatório personalizado
+async function gerarRelatorioPersonalizado() {
+    const tipo = document.getElementById('tipoRelatorio').value;
+    await gerarRelatorio(tipo);
+}
+
+// Pré-visualizar relatório
+function previsualizarRelatorio() {
+    mostrarToast('Pré-visualização em desenvolvimento', 'info');
+}
+
+// Agendar relatório
+function agendarRelatorio() {
+    const modal = new bootstrap.Modal(document.getElementById('modalAgendamento'));
+    modal.show();
+}
+
+// Novo agendamento
+function novoAgendamento() {
+    const form = document.getElementById('formAgendamento');
+    form.reset();
+    
+    // Preencher data padrão (amanhã)
+    const amanha = new Date();
+    amanha.setDate(amanha.getDate() + 1);
+    form.querySelector('input[type="date"]').value = amanha.toISOString().split('T')[0];
+    
+    const modal = new bootstrap.Modal(document.getElementById('modalAgendamento'));
+    modal.show();
+}
+
+// Salvar agendamento
+async function salvarAgendamento() {
+    try {
+        const form = document.getElementById('formAgendamento');
+        const formData = new FormData(form);
+        const dados = Object.fromEntries(formData.entries());
+        
+        // Mapear os dados do formulário para o formato esperado pela API
+        const dadosAgendamento = {
+            tipo: dados.tipo_relatorio,
+            formato: dados.formato_relatorio,
+            data_agendamento: dados.data_agendamento,
+            frequencia: dados.frequencia,
+            destinatarios: dados.destinatarios ? dados.destinatarios.split(',').map(e => e.trim()) : []
+        };
+        
+        const response = await fetch('/api/relatorios/agendar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(dadosAgendamento)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalAgendamento'));
+            modal.hide();
+            
+            mostrarToast('Relatório agendado com sucesso!', 'success');
+            
+            // Atualizar tabela de agendados
+            setTimeout(carregarRelatoriosAgendados, 1000);
+        } else {
+            throw new Error(data.message);
+        }
+        
+    } catch (error) {
+        console.error('Erro ao agendar relatório:', error);
+        mostrarToast(error.message || 'Erro ao agendar relatório', 'error');
+    }
+}
+
+// Carregar relatórios agendados
+async function carregarRelatoriosAgendados() {
+    try {
+        // Implementar chamada à API
+        // Por enquanto, mostra mensagem
+        const tbody = document.getElementById('relatoriosAgendadosTable');
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center py-4">
+                    <i class="fas fa-calendar fa-2x text-muted mb-3"></i>
+                    <p class="text-muted">Nenhum relatório agendado</p>
+                </td>
+            </tr>
+        `;
+    } catch (error) {
+        console.error('Erro ao carregar agendados:', error);
+    }
+}
+
+// Baixar relatório
+async function baixarRelatorio(id) {
+    try {
+        // Implementar download do relatório
+        mostrarToast('Download em desenvolvimento', 'info');
+    } catch (error) {
+        console.error('Erro ao baixar relatório:', error);
+        mostrarToast('Erro ao baixar relatório', 'error');
+    }
+}
+
+// Mostrar toast (Usando a função global showToast de base.html)
+function mostrarToast(mensagem, tipo = 'info') {
+    showToast(mensagem, tipo);
+}
+
+// Inicializar
+document.addEventListener('DOMContentLoaded', function() {
+    carregarHistoricoRelatorios();
+    carregarRelatoriosAgendados();
+});
+</script>
+{% endblock %}
